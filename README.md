@@ -49,6 +49,24 @@ Breakpoints: `< 750px` usa a coluna mobile; `750–989px` usa `min(desktop, 2)`;
 
 - O Liquid retorna no máximo 50 entradas de um metaobject sem `paginate`. Para mais que isso, a section precisa de paginação.
 
+## Validação já realizada
+
+Feita em preview local (Liquid renderizado com liquidjs e metaobjects simulados), sem loja Shopify:
+
+- `shopify theme check`: 0 problemas na section e no snippet.
+- Renderização com 0, 6, 9 e 12 registros; com 0 registros a section não gera HTML nem carrega CSS na loja, e mostra aviso só no Theme Editor.
+- Casos de borda: nome longo (truncado com `…` e `title`), vendedor sem foto, sem medalha, sem produtos, sem nome e com referência de produto excluída.
+- Responsividade conferida em 1440px, 820px e 390px.
+- Lighthouse (mobile), página vazia × página com 12 vendedores:
+
+| Métrica | 0 vendedores | 12 vendedores |
+| --- | --- | --- |
+| Performance | 99 | 99 |
+| CLS | 0 | 0 |
+| TBT | 0 ms | 0 ms |
+| Elementos no DOM | 2 | 503 |
+| CSS da section | não carregado | 4 KB (sem gzip) |
+
 ## Checklist de validação
 
 - [ ] Criar ≥ 5 entradas ativas com medalhas diferentes → conferir grid 3 colunas (desktop) e 1 coluna (mobile)
