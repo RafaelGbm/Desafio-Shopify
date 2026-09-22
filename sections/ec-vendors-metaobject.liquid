@@ -1,0 +1,246 @@
+{%- comment -%}
+  Section: EC Vendors (Metaobject)
+  Renders every published entry of a metaobject definition (default: store_vendor).
+
+  Expected metaobject fields (keys):
+    - name      single_line_text_field       Nome do vendedor
+    - role      single_line_text_field       Cargo
+    - photo     file_reference (image)       Foto (opcional)
+    - tier      single_line_text_field       gold | silver | bronze (ou ouro | prata | bronze) (opcional)
+    - products  list.product_reference       Produtos vendidos (opcional)
+{%- endcomment -%}
+
+{%- liquid
+  assign metaobject_type = section.settings.metaobject_type | strip | default: 'store_vendor'
+  assign vendors = shop.metaobjects[metaobject_type].values
+  assign vendors_count = vendors | size
+
+  assign cols_desktop = section.settings.columns_desktop
+  assign cols_tablet = cols_desktop | at_most: 2
+  assign cols_mobile = section.settings.columns_mobile
+-%}
+
+{%- if vendors_count > 0 or request.design_mode -%}
+  {{ 'ec-vendors-metaobject.css' | asset_url | stylesheet_tag }}
+
+  <section
+    class="ec-vendors"
+    id="ec-vendors-{{ section.id }}"
+    style="
+      --ec-cols-d: {{ cols_desktop }};
+      --ec-cols-t: {{ cols_tablet }};
+      --ec-cols-m: {{ cols_mobile }};
+      --ec-border: {{ section.settings.border_color | default: 'transparent' }};
+      --ec-card-bg: {{ section.settings.card_background | default: 'transparent' }};
+      --ec-section-bg: {{ section.settings.section_background | default: 'transparent' }};
+      --ec-pad: {{ section.settings.card_padding }}px;
+      --ec-gap: {{ section.settings.grid_gap }}px;
+      --ec-radius: {{ section.settings.card_radius }}px;
+      --ec-pt: {{ section.settings.padding_top }}px;
+      --ec-pb: {{ section.settings.padding_bottom }}px;
+    "
+    {% if section.settings.title != blank %}aria-labelledby="ec-vendors-title-{{ section.id }}"{% endif %}
+  >
+    <div class="ec-vendors__container">
+      {%- if section.settings.title != blank or section.settings.subtitle != blank -%}
+        <header class="ec-vendors__header">
+          {%- if section.settings.title != blank -%}
+            <h2 class="ec-vendors__title" id="ec-vendors-title-{{ section.id }}">
+              {{- section.settings.title | escape -}}
+            </h2>
+          {%- endif -%}
+          {%- if section.settings.subtitle != blank -%}
+            <p class="ec-vendors__subtitle">{{ section.settings.subtitle | escape }}</p>
+          {%- endif -%}
+        </header>
+      {%- endif -%}
+
+      {%- if vendors_count > 0 -%}
+        <ul class="ec-vendors__grid" role="list">
+          {%- for vendor in vendors limit: section.settings.max_vendors -%}
+            <li class="ec-vendors__item">
+              {%- render 'ec-vendor-card',
+                vendor: vendor,
+                max_products: section.settings.max_products,
+                products_label: section.settings.products_label
+              -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- else -%}
+        {%- comment -%} Only visible inside the Theme Editor: storefront renders nothing without data. {%- endcomment -%}
+        <div class="ec-vendors__empty">
+          Nenhum registro publicado encontrado para o metaobject
+          <code>{{ metaobject_type | escape }}</code>. Crie e publique entradas em
+          <strong>Conteúdo &rsaquo; Metaobjects</strong> e verifique se o acesso à loja virtual está habilitado.
+        </div>
+      {%- endif -%}
+    </div>
+  </section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "EC Vendedores",
+  "tag": "div",
+  "class": "section-ec-vendors",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Conteúdo"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Título da seção",
+      "default": "Desafio Shopify"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Subtítulo da seção",
+      "default": "Seção para mostrar vendedores disponíveis de uma loja"
+    },
+    {
+      "type": "text",
+      "id": "products_label",
+      "label": "Rótulo dos produtos",
+      "default": "Produtos vendidos"
+    },
+    {
+      "type": "header",
+      "content": "Fonte de dados"
+    },
+    {
+      "type": "text",
+      "id": "metaobject_type",
+      "label": "Tipo do metaobject",
+      "default": "store_vendor",
+      "info": "Handle da definição do metaobject (Configurações › Dados personalizados › Metaobjects)."
+    },
+    {
+      "type": "range",
+      "id": "max_vendors",
+      "label": "Máximo de vendedores",
+      "min": 1,
+      "max": 50,
+      "step": 1,
+      "default": 50,
+      "info": "O Liquid retorna no máximo 50 entradas por metaobject sem paginação."
+    },
+    {
+      "type": "range",
+      "id": "max_products",
+      "label": "Máximo de produtos por card",
+      "min": 1,
+      "max": 12,
+      "step": 1,
+      "default": 7
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Itens por linha (desktop)",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Itens por linha (mobile)",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ],
+      "default": "1"
+    },
+    {
+      "type": "range",
+      "id": "grid_gap",
+      "label": "Espaço entre cards",
+      "min": 0,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Card"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Cor da borda",
+      "default": "#F5D547"
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Cor de fundo do card",
+      "default": "#FFFCF5"
+    },
+    {
+      "type": "range",
+      "id": "card_padding",
+      "label": "Espaçamento interno",
+      "min": 8,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "card_radius",
+      "label": "Arredondamento da borda",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Seção"
+    },
+    {
+      "type": "color",
+      "id": "section_background",
+      "label": "Cor de fundo da seção",
+      "default": "#F5F5F5"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Espaçamento superior",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Espaçamento inferior",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    }
+  ],
+  "presets": [
+    {
+      "name": "EC Vendedores"
+    }
+  ]
+}
+{% endschema %}

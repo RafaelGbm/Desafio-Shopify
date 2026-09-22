@@ -1,0 +1,97 @@
+{%- comment -%}
+  Renders a single vendor card.
+
+  Accepts:
+    - vendor {metaobject}: entry of the vendors metaobject
+    - max_products {number}: maximum products rendered in the card
+    - products_label {string}: label above the products row
+
+  Usage:
+    {% render 'ec-vendor-card', vendor: vendor, max_products: 7, products_label: 'Produtos vendidos' %}
+{%- endcomment -%}
+
+{%- liquid
+  assign vendor_name = vendor.name.value | default: vendor.system.handle | default: ''
+  assign vendor_role = vendor.role.value | default: ''
+  assign vendor_photo = vendor.photo.value
+  # Drops references to deleted/unpublished products (they come back as nil)
+  assign vendor_products = vendor.products.value | compact
+
+  assign tier = ''
+  assign tier_raw = vendor.tier.value | default: '' | strip | downcase
+  case tier_raw
+    when 'gold', 'ouro'
+      assign tier = 'gold'
+      assign tier_label = 'Medalha de ouro'
+    when 'silver', 'prata'
+      assign tier = 'silver'
+      assign tier_label = 'Medalha de prata'
+    when 'bronze'
+      assign tier = 'bronze'
+      assign tier_label = 'Medalha de bronze'
+  endcase
+-%}
+
+<article class="ec-vendor-card">
+  <div class="ec-vendor-card__head">
+    <div class="ec-vendor-card__avatar">
+      {%- if vendor_photo != blank -%}
+        {{
+          vendor_photo
+          | image_url: width: 96, height: 96, crop: 'center'
+          | image_tag: loading: 'lazy', width: 48, height: 48, alt: vendor_name, class: 'ec-vendor-card__avatar-img'
+        }}
+      {%- else -%}
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="28" height="28">
+          <path fill="currentColor" d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-3.3 0-8 1.7-8 5v1h16v-1c0-3.3-4.7-5-8-5Z"/>
+        </svg>
+      {%- endif -%}
+    </div>
+
+    <div class="ec-vendor-card__info">
+      {%- if vendor_name != blank -%}
+        <h3 class="ec-vendor-card__name" title="{{ vendor_name | escape }}">{{ vendor_name | escape }}</h3>
+      {%- endif -%}
+      {%- if vendor_role != blank -%}
+        <p class="ec-vendor-card__role" title="{{ vendor_role | escape }}">{{ vendor_role | escape }}</p>
+      {%- endif -%}
+    </div>
+
+    {%- if tier != blank -%}
+      <span class="ec-vendor-card__medal ec-vendor-card__medal--{{ tier }}" role="img" aria-label="{{ tier_label }}" title="{{ tier_label }}">
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round">
+          <path d="M9 4h6l-3 5z"/>
+          <circle cx="12" cy="14.5" r="5.5"/>
+          <path d="M12 11.8l.8 1.7 1.9.2-1.4 1.3.4 1.9-1.7-1-1.7 1 .4-1.9-1.4-1.3 1.9-.2z"/>
+        </svg>
+      </span>
+    {%- endif -%}
+  </div>
+
+  {%- if vendor_products != blank -%}
+    <div class="ec-vendor-card__products">
+      {%- if products_label != blank -%}
+        <p class="ec-vendor-card__products-label">{{ products_label | escape }}</p>
+      {%- endif -%}
+      <ul class="ec-vendor-card__products-list" role="list">
+        {%- for product in vendor_products limit: max_products -%}
+          <li>
+            <a href="{{ product.url }}" class="ec-vendor-card__product" title="{{ product.title | escape }}">
+              {%- if product.featured_image != blank -%}
+                {{
+                  product.featured_image
+                  | image_url: width: 64, height: 64, crop: 'center'
+                  | image_tag: loading: 'lazy', width: 32, height: 32, alt: product.title
+                }}
+              {%- else -%}
+                <svg viewBox="0 0 24 24" width="28" height="28" role="img" aria-label="{{ product.title | escape }}">
+                  <path fill="currentColor" d="M8.5 3 3 5.6l1.6 4.2 2.4-.9V21h10V8.9l2.4.9L21 5.6 15.5 3c-.4 1.4-1.8 2.4-3.5 2.4S8.9 4.4 8.5 3Z"/>
+                </svg>
+              {%- endif -%}
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  {%- endif -%}
+</article>
