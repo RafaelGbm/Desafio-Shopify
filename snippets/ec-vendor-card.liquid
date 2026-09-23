@@ -1,24 +1,13 @@
-{%- comment -%}
-  Renders a single vendor card.
-
-  Accepts:
-    - vendor {metaobject}: entry of the vendors metaobject
-    - max_products {number}: maximum products rendered in the card
-    - products_label {string}: label above the products row
-
-  Usage:
-    {% render 'ec-vendor-card', vendor: vendor, max_products: 7, products_label: 'Produtos vendidos' %}
-{%- endcomment -%}
-
 {%- liquid
   assign vendor_name = vendor.name.value | default: vendor.system.handle | default: ''
   assign vendor_role = vendor.role.value | default: ''
   assign vendor_photo = vendor.photo.value
-  # Drops references to deleted/unpublished products (they come back as nil)
+  # produto excluído ou despublicado vira nil na lista, o compact tira isso
   assign vendor_products = vendor.products.value | compact
 
   assign tier = ''
   assign tier_raw = vendor.tier.value | default: '' | strip | downcase
+  # aceita gold/silver/bronze ou ouro/prata/bronze, do jeito que cadastrarem no admin
   case tier_raw
     when 'gold', 'ouro'
       assign tier = 'gold'

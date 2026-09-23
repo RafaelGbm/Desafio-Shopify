@@ -70,11 +70,9 @@
   font-size: 14px;
 }
 
-/* Card */
 .ec-vendor-card {
   flex: 1;
-  /* Lets the card shrink to its grid column so long names truncate instead of overflowing */
-  min-width: 0;
+  min-width: 0; /* sem isso o nome comprido empurra o card e o ellipsis nunca entra em ação */
   display: flex;
   flex-direction: column;
   gap: 28px;

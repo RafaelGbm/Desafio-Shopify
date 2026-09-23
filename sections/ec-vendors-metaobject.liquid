@@ -1,25 +1,15 @@
-{%- comment -%}
-  Section: EC Vendors (Metaobject)
-  Renders every published entry of a metaobject definition (default: store_vendor).
-
-  Expected metaobject fields (keys):
-    - name      single_line_text_field       Nome do vendedor
-    - role      single_line_text_field       Cargo
-    - photo     file_reference (image)       Foto (opcional)
-    - tier      single_line_text_field       gold | silver | bronze (ou ouro | prata | bronze) (opcional)
-    - products  list.product_reference       Produtos vendidos (opcional)
-{%- endcomment -%}
-
 {%- liquid
   assign metaobject_type = section.settings.metaobject_type | strip | default: 'store_vendor'
   assign vendors = shop.metaobjects[metaobject_type].values
   assign vendors_count = vendors | size
 
   assign cols_desktop = section.settings.columns_desktop
+  # no tablet trava em 2 colunas pra não ficar espremido, independente do valor do desktop
   assign cols_tablet = cols_desktop | at_most: 2
   assign cols_mobile = section.settings.columns_mobile
 -%}
 
+{%- comment -%} com design_mode a section aparece mesmo vazia, só pra avisar quem tá editando que falta cadastrar vendedor {%- endcomment -%}
 {%- if vendors_count > 0 or request.design_mode -%}
   {{ 'ec-vendors-metaobject.css' | asset_url | stylesheet_tag }}
 
@@ -68,7 +58,6 @@
           {%- endfor -%}
         </ul>
       {%- else -%}
-        {%- comment -%} Only visible inside the Theme Editor: storefront renders nothing without data. {%- endcomment -%}
         <div class="ec-vendors__empty">
           Nenhum registro publicado encontrado para o metaobject
           <code>{{ metaobject_type | escape }}</code>. Crie e publique entradas em
